@@ -7,25 +7,57 @@ use app\models\Coupon;
 use app\models\Website;
 use app\models\CouponCategories;
 use Yii;
-include '../vendor/phpoffice/phpexcel/classes/phpexcel.php';
 
 class CouponDuniaController extends \yii\web\Controller
 {
     public function actionIndex()
     {
-        return $this->render('index');
+        $couponType = new Coupon;
+        $resultCouponType = $couponType->getAllCouponType();
+        $websiteStores = new Website();
+        $resultStores = $websiteStores->getAllWebsiteName();
+        $couponCategories = new CouponCategories();
+        $resultCategory = $couponCategories->getAllStoresName();
+        $couponDetail = new Coupon;
+        $resultDetail = $couponDetail->getAllCouponDetail();
+        return $this->render('index', ['resultType' => $resultCouponType,
+            'resultStores' => $resultStores,
+            'resultCategory' => $resultCategory,
+            'resultDetail' => $resultDetail
+            ]);
     }
     
-    public function actionDisplayCoupon($param = 'none') {
-        return $this->renderPartial('displaycoupon', ['site' => $param]);
+    public function actionDisplayCoupon() {
+        $site = $_GET['site'];
+        $couponDetail = new Coupon;
+        $result = $couponDetail->getAllCouponDetailBySite($site);
+        if(count($result) == 0) {
+          echo '<strong>oops!!</strong><br>Looks like there\'s no offer for you...:(<br>';
+        } else {
+            return $this->renderPartial('displaycoupon', ['site' => $site, 'resultStore' => $result]);
+        }
     }
     
-    public function actionDisplayCouponByCategory($param = 'none') {
-        return $this->renderPartial('displaycouponbycategory', ['category' => $param]);
+    public function actionDisplayCouponByCategory() {
+        $category = $_GET['cat'];
+        $couponDetail = new Coupon;
+        $resultcategory = $couponDetail->getAllCouponDetailByCategory($category);
+        if(count($resultcategory) == 0) {
+          echo '<strong>oops!!</strong><br>Looks like there\'s no offer for you...:(<br>';
+        } else {
+            return $this->renderPartial('displaycouponbycategory', ['cat' => $category, 'resultCategory' => $resultcategory]);
+        }
     }
 
-    public function actionDisplayCouponByType($param = 'none') {
-        return $this->renderPartial('displaycouponbytype', ['category' => $param]);
+    public function actionDisplayCouponByType() {
+        $type = $_GET['type'];
+        $couponDetail = new Coupon;
+        $resultType = $couponDetail->getAllCouponDetailByType($type);
+        if(count($resultType) == 0) {
+          echo '<strong>oops!!</strong><br>Looks like there\'s no offer for you...:(<br>';
+        } else {
+        return $this->renderPartial('displaycouponbytype', ['resultType' => $resultType]);
+        }
     }
     
     public function actionDownload($type = 'none', $value = 'none') {
