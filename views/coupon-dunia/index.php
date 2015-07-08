@@ -1,89 +1,6 @@
 <?php
-
-// contains all required functions as per filter result requirement..
-include_once 'helper.php';
+$this->registerJsFile(Yii::$app->request->baseUrl.'/js/index.js',['depends' => [\yii\web\JqueryAsset::className()]]);
 ?>
-
-<script type="text/javascript">
-var filterType = '';
-var filterValue = '';
-
-// for onclick event of filter by store
-function loadSiteCoupon(dealSite){
-    filterType = 'store';
-    filterValue = dealSite;
-    if(window.XMLHttpRequest) {
-        xmlhttp = new XMLHttpRequest();
-    } else {
-        xmlhttp = new ActiveXObject('Microsoft.XMLHTTP');
-    }
-    xmlhttp.onreadystatechange = function() {
-        if(xmlhttp.readyState == 4 && xmlhttp.status == 200) {
-            document.getElementById('CouponDisplay').innerHTML = xmlhttp.responseText;
-        }
-    }
-    
-    xmlhttp.open('GET', "http://localhost:8888/basic/web/index.php?r=coupon-dunia/display-coupon&site="+dealSite, true);
-    xmlhttp.send();
-}
-
-// for onclick event of filter by category
-function loadSiteCouponByCategory(category) {
-    filterType = 'category';
-    filterValue = category;
-    if(window.XMLHttpRequest) {
-        xmlhttp = new XMLHttpRequest();
-    } else {
-        xmlhttp = new ActiveXObject('Microsoft.XMLHTTP');
-    }
-    xmlhttp.onreadystatechange = function() {
-        if(xmlhttp.readyState == 4 && xmlhttp.status == 200) {
-            document.getElementById('CouponDisplay').innerHTML = xmlhttp.responseText;
-        }
-    }
-    
-    xmlhttp.open('GET', "http://localhost:8888/basic/web/index.php?r=coupon-dunia/display-coupon-by-category&cat="+category, true);
-    xmlhttp.send();
-}
-
-// for onclick event of filter by coupon type
-function loadSiteCouponByType(type) {
-    filterType = 'coupontype';
-    filterValue = type;
-    if(window.XMLHttpRequest) {
-        xmlhttp = new XMLHttpRequest();
-    } else {
-        xmlhttp = new ActiveXObject('Microsoft.XMLHTTP');
-    }
-    xmlhttp.onreadystatechange = function() {
-        if(xmlhttp.readyState == 4 && xmlhttp.status == 200) {
-            document.getElementById('CouponDisplay').innerHTML = xmlhttp.responseText;
-        }
-    }
-    
-    xmlhttp.open('GET', "http://localhost:8888/basic/web/index.php?r=coupon-dunia/display-coupon-by-type&type="+type, true);
-    xmlhttp.send();
-}
-
-// for onclick event of download button
-function loadDownload() {
-    if(window.XMLHttpRequest) {
-        xmlhttp = new XMLHttpRequest();
-    } else {
-        xmlhttp = new ActiveXObject('Microsoft.XMLHTTP');
-    }
-    xmlhttp.onreadystatechange = function() {
-        if(xmlhttp.readyState == 4 && xmlhttp.status == 200) {
-            //document.getElementById('').innerHTML = xmlhttp.responseText;
-            alert('Dowload successful!\ndownloaded to path : "web/CouponExcel.xlsx"');
-        }
-    }
-    
-    xmlhttp.open('GET', "http://localhost:8888/basic/web/index.php?r=coupon-dunia/download&type="+filterType+"&value="+filterValue, true);
-    xmlhttp.send();
-}
-
-</script>
 <br>
 <div class="container">
     <div class="row">
@@ -92,7 +9,9 @@ function loadDownload() {
                         <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown">
                             Filter by coupon type [Deal/Coupon]<span class="caret"></span></button>
                         <ul class="dropdown-menu" style="overflow-y: scroll;">
-                            <?php GetCouponTypeInList(); ?>
+                            <?php foreach ($resultType as $name) {
+                                    echo '<li><input type="radio" name="$name" id="$name" onclick="loadSiteCouponByType(\''.$name.'\');" /> '.$name.'</li>';
+                            } ?>
                         </ul>
             </div><br><br>
                     
@@ -100,7 +19,9 @@ function loadDownload() {
                         <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown">
                                 Filter by Stores<span class="caret"></span></button>
                         <ul class="dropdown-menu" style="overflow-y: scroll; height: 300px;">
-                            <?php GetStoresNameInList(); ?>
+                            <?php foreach ($resultStores as $name) {
+                                 echo '<li><input type="radio" name="$name" id="$name" onclick="loadSiteCoupon(\''.$name.'\');" /> '.$name.'</li>';
+                            } ?>
                         </ul>
             </div><br><br>
                     
@@ -108,7 +29,9 @@ function loadDownload() {
                         <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown">
                             Filter by Categories<span class="caret"></span></button>
                         <ul class="dropdown-menu" style="overflow-y: scroll; height: 300px;">
-                            <?php GetCategoriesNamesInList(); ?>
+                            <?php foreach ($resultCategory as $name) {
+                                    echo '<li><input type="radio" name="$name" id="$name" onclick="loadSiteCouponByCategory(\''.$name.'\');"/> '.$name.'</li>';
+                            } ?>
                         </ul>
             </div><br><br>
             <a href="javascript:void(0);" onclick="loadDownload();" class="btn btn-success">Download</a>        
@@ -118,9 +41,21 @@ function loadDownload() {
                 
             <div class="col-sm-7" style="overflow-y: scroll; height: 88vh;" id="CouponDisplay">
                     <?php 
-                      getAllCouponsDetail();
-                    for($i = 0;$i < 60 && NextDealExist();$i++) {
-                        $deal = GetNextCouponForUser(); ?>
+                    for($idx = 0;$idx < 60 && $idx < count($resultDetail);$idx++) {
+                        $expiry = $resultDetail[$idx]['Expiry'];
+                            if($expiry == null) {
+                                $expiry = '2020-01-01 23:59:59';
+                            }
+                        $deal = [
+                            'type' => $resultDetail[$idx]['CouponType'],
+                            'site'  => $resultDetail[$idx]['Site'],
+                            'description' => $resultDetail[$idx]['Description'],
+                            'expiry' => $expiry,
+                            'code' => $resultDetail[$idx]['CouponCode'],
+                            'logo' => 'logo.png',
+                            'link' => $resultDetail[$idx]['url']
+                        ];
+                        ?>
                     
                     <div class="row">
                         <div class="col-sm-6" style="text-align: left;">

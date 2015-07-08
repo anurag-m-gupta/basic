@@ -72,12 +72,23 @@ class CouponCategories extends \yii\db\ActiveRecord
                 ->distinct(true)
                 ->select('Name')
                 ->all();
+        
+        
         $type = array();
         $ind = 0;
         foreach ($result as $value) {
             $type[$ind++] = $value->Name;
         }
         return $type;
+        
     }
     
+    function getCategoryId() {
+        $command = new \yii\db\Query;
+        
+        return $command->select(["CategoryId"])
+                ->from(self::tableName())
+                ->where(["Name" => $this->Name])
+                ->one();
+    }
 }

@@ -205,11 +205,18 @@ class Coupon extends \yii\db\ActiveRecord
     
     // get a result array of top coupons by category
     function getAllCouponDetailByCategory($cat) {
+        $category = new CouponCategories;
+        $category->Name = $cat;
+        $catId = $category->getCategoryId();
+        
+        $cpn = new CouponCategoryInfo;
+        $cpn->CategoryID = $catId;
+        $couponIds = $cpn->getCouponIds();
+
         $query = (new \yii\db\Query())
-                ->from('Coupon')
-                ->innerJoin('Website', 'Coupon.WebsiteID = Website.WebsiteID')
                 ->select('CouponType, Website.WebsiteName AS Site, Coupon.Description AS Description, Coupon.Expiry AS Expiry, CouponCode, WebsiteURL AS url')
-                ->where("CouponID IN (SELECT CouponID FROM CouponCategoryInfo WHERE CategoryID=(Select CategoryID from CouponCategories where Name='".$cat."'))")
+                ->from('Coupon, Website')
+                ->where(["CouponID" => $couponIds])
                 ->orderBy('CountSuccess DESC')
                 ->limit(60)
                 ->all();

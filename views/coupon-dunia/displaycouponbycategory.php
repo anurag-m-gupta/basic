@@ -1,12 +1,20 @@
 <?php
-include_once 'helper.php';
-$cat = $_GET['cat'];
-?>
-<?php
     // get details of coupon by category 
-     getAllCouponDetailByCategoryName($cat);
-                    for($i = 0;$i < 60 && NextDealExist();$i++) {
-                        $deal = GetNextCouponForUser(); ?>
+                    for($idx = 0;$idx < 60 && $idx < count($resultCategory);$idx++) {
+                        $expiry = $resultCategory[$idx]['Expiry'];
+                            if($expiry == null) {
+                                $expiry = '2020-01-01 23:59:59';
+                            }
+                        $deal = [
+                            'type' => $resultCategory[$idx]['CouponType'],
+                            'site'  => $resultCategory[$idx]['Site'],
+                            'description' => $resultCategory[$idx]['Description'],
+                            'expiry' => $expiry,
+                            'code' => $resultCategory[$idx]['CouponCode'],
+                            'logo' => 'logo.png',
+                            'link' => $resultCategory[$idx]['url']
+                        ];
+                        ?>
                     
                     <div class="row">
                         <div class="col-sm-6" style="text-align: left;">
@@ -43,8 +51,8 @@ $cat = $_GET['cat'];
                     </div><br>
                     
                     <div class="row" style="text-align: center;">
-                        <a href="javascript:void(0);" onclick="loadSiteCoupon('<?= $deal['site'] ?>')">Grab all deals from <?= ucfirst(strtolower($deal['site'])); ?></a>
+                        <a href="javascript:void(0);" onclick="loadSiteCoupon('<?= $deal['site'] ?>')" id="link">Grab all deals from <?= ucfirst(strtolower($deal['site'])); ?></a>
                     </div>
                     <b><hr></b>
                     
-<?php } ?>
+                    <?php }?>
